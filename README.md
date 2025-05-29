@@ -1,13 +1,11 @@
 # react-native-elevenlabs
 
-Bridge for elevenlabs sdk
+This project is the bridge for elevenlabs swift SDK
 
 ## Installation
 
 ```sh
-npm install react-native-elevenlabs react-native-nitro-modules
-
-> `react-native-nitro-modules` is required as this library relies on [Nitro Modules](https://nitro.margelo.com/).
+npm install react-native-elevenlabs
 ```
 
 ## Usage
