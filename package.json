@@ -1,6 +1,6 @@
 {
   "name": "react-native-elevenlabs",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "This project is the bridge for elevenlabs swift SDK",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
