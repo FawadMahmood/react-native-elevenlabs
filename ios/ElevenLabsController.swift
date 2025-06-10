@@ -53,6 +53,9 @@ public class ElevenLabsController: NSObject {
     }
     callbacks.onError = { [weak self] errorMessage, info in
         self?.handleEvent(ElevenLabsEventEvents.onError, ["error": errorMessage, "info": info ?? ""])
+        self?.conversation?.endSession()
+        self?.conversation = nil
+        self?.handleEvent(ElevenLabsEventEvents.onDisconnect, [:])
     }
     callbacks.onStatusChange = { [weak self] newStatus in
         self?.updateStatus(newStatus)
