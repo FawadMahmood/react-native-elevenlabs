@@ -65,13 +65,24 @@ public class ElevenLabsController: NSObject {
     }
     return callbacks
   }
-
-  @objc public func startConversation(_ agentId: String) {
+  
+  @objc public func startConversation(_ agentId: String, dynamicVariables: [String: Any]) {
     if status == .connected {
       stopConversation()
     }
 
-    let config = ElevenLabsSDK.SessionConfig(agentId: agentId)
+    var converted: [String: ElevenLabsSDK.DynamicVariableValue] = [:]
+    for (key, value) in dynamicVariables {
+      if let str = value as? String {
+        converted[key] = .string(str)
+      } else if let intVal = value as? Int {
+        converted[key] = .int(intVal)
+      }else if let boolVal = value as? Bool {
+        converted[key] = .boolean(boolVal)
+      }
+    }
+
+    let config = ElevenLabsSDK.SessionConfig(agentId: agentId, dynamicVariables: converted)
     let callbacks = setupCallbacks()
 
     Task { [weak self] in

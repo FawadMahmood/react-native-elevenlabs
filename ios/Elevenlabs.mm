@@ -37,19 +37,21 @@
 RCT_EXPORT_MODULE()
 
 - (void)startConversation:(NSString *)agentId
-                      onSuccess:(RCTResponseSenderBlock)onSuccess
-                      onError:(RCTResponseSenderBlock)onError {
+                      dynamicVariables:(NSDictionary *)dynamicVariables {
   @try {
-      [controller startConversation:agentId];
-      if (onSuccess) {
-        onSuccess(@[]);
+      if (dynamicVariables && [dynamicVariables isKindOfClass:[NSDictionary class]]) {
+        [controller startConversation:agentId dynamicVariables:dynamicVariables];
+      } else {
+        [controller startConversation:agentId dynamicVariables:@{}];
       }
-    }
-    @catch (NSException *exception) {
-      if (onError) {
-        onError(@[exception.reason ?: @"Unknown error"]);
-      }
-    }
+  }
+  @catch (NSException *exception) {
+      // Optionally emit an error event or handle error here
+   [self emitOnError:@{
+      @"error": exception.reason ?: @"Unknown error",
+      @"info": exception.userInfo ?: @""
+    }];
+  }
 }
 
 - (void)stopConversation {

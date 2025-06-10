@@ -34,8 +34,7 @@ export type ConversationalAIOnVolumeUpdate = {
 export interface Spec extends TurboModule {
   startConversation(
     agentId: string,
-    onSuccess: () => void,
-    onError: (error: string) => void
+    dynamicVariables?: { [key: string]: string | number | boolean }
   ): void;
   stopConversation(): void;
 

@@ -12,7 +12,7 @@ class ElevenlabsModule(reactContext: ReactApplicationContext) :
     return NAME
   }
 
-  override fun startConversation(agentId: String,onSuccess: Callback, onError: Callback) {
+  override fun startConversation(agentId: String, dynamicVariables: ReadableMap?) {
     // TODO: Implement actual logic to start conversation
   }
 

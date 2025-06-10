@@ -2,10 +2,9 @@ import Elevenlabs from './NativeElevenlabs';
 
 export function startConversation(
   agentId: string,
-  onSuccess: () => void,
-  onError: (error: string) => void
+  dynamicVariables?: { [key: string]: string | number | boolean }
 ) {
-  Elevenlabs.startConversation(agentId, onSuccess, onError);
+  Elevenlabs.startConversation(agentId, dynamicVariables);
 }
 
 export function stopConversation() {

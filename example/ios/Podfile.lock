@@ -2,7 +2,7 @@ PODS:
   - boost (1.84.0)
   - DeviceKit (5.6.0)
   - DoubleConversion (1.1.6)
-  - Elevenlabs (0.2.5):
+  - Elevenlabs (0.2.10):
     - DeviceKit
     - DoubleConversion
     - glog
@@ -1912,7 +1912,7 @@ SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DeviceKit: 9f2e0b68984a384f864b0f4e40a54bae43636bd8
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  Elevenlabs: cb26d40cb67b2bd6a5efc5b318f9ce7fdfd18aab
+  Elevenlabs: 7df0e81172557b1de4a42038e5ac1e46483452c3
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 84b955f7b4da8b895faf5946f73748267347c975
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
