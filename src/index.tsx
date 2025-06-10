@@ -11,3 +11,5 @@ export function startConversation(
 export function stopConversation() {
   Elevenlabs.stopConversation();
 }
+
+export default Elevenlabs;
