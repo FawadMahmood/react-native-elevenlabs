@@ -1,33 +1,31 @@
 # react-native-elevenlabs
 
-This project is the bridge for elevenlabs swift SDK
-
-## Installation
-
-```sh
-npm install react-native-elevenlabs
-```
-
-## Usage
-
-
-```js
-import { multiply } from 'react-native-elevenlabs';
-
-// ...
-
-const result = multiply(3, 7);
-```
-
-
-## Contributing
-
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
-
-## License
-
-MIT
+A React Native TurboModule for integrating [ElevenLabsSwift](https://github.com/elevenlabs/ElevenLabsSwift) conversational AI features in your iOS app.
 
 ---
 
-Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
+## Features
+
+- Start and stop conversational AI sessions
+- Receive real-time events: message, connect, disconnect, error, status change, mode change, volume update
+- Written in Swift with TurboModule support
+
+---
+
+## Installation
+
+### 1. Add the ElevenLabsSwift Swift Package
+
+**Required:**  
+Your app must add the [ElevenLabsSwift](https://github.com/elevenlabs/ElevenLabsSwift) Swift Package.
+
+- In Xcode, go to **File > Add Packages...**
+- Enter: `https://github.com/elevenlabs/ElevenLabsSwift`
+- Add the package to your app target.
+
+### 2. Install the React Native Module
+
+```sh
+npm install react-native-elevenlabs
+# or
+yarn add react-native-elevenlabs
