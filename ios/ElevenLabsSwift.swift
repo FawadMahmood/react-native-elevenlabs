@@ -689,6 +689,8 @@ public class ElevenLabsSDK {
         private var currentInputVolume: Float = 0.0
 
         private var _mode: Mode = .listening
+        private var modeTransitionWorkItem: DispatchWorkItem?
+        private var lastMode: Mode = .listening
         private var _status: Status = .connecting
         private var _volume: Float = 1.0
         private var _lastInterruptTimestamp: Int = 0
@@ -833,7 +835,7 @@ public class ElevenLabsSDK {
 
             // Step 7: Start recording
             conversation.startRecording()
-
+            
             return conversation
         }
 
@@ -1059,6 +1061,22 @@ public class ElevenLabsSDK {
             input.setRecordCallback { [weak self] buffer, rms in
                 guard let self = self, self.isProcessingInput else { return }
 
+                let speakingThreshold: Float = 0.02 // Adjust as needed
+                let transitionDelay: TimeInterval = 0.3 // 200ms delay for smoothness
+
+                let newMode: Mode = rms > speakingThreshold ? .speaking : .listening
+
+                if newMode != self.lastMode {
+                    self.modeTransitionWorkItem?.cancel()
+                    let workItem = DispatchWorkItem { [weak self] in
+                        guard let self = self else { return }
+                        self.updateMode(newMode)
+                        self.lastMode = newMode
+                    }
+                    self.modeTransitionWorkItem = workItem
+                    DispatchQueue.main.asyncAfter(deadline: .now() + transitionDelay, execute: workItem)
+                }
+                
                 // Convert buffer data to base64 string
                 if let int16ChannelData = buffer.int16ChannelData {
                     let frameLength = Int(buffer.frameLength)
