@@ -12,13 +12,6 @@ A React Native TurboModule for integrating [ElevenLabsSwift](https://github.com/
 
 ---
 
-## Installation
-
-
-- In Xcode, go to **File > Add Packages...**
-- Enter: `https://github.com/elevenlabs/ElevenLabsSwift`
-- Add the package to your app target.
-
 ### 1. Install the React Native Module
 
 ```sh
