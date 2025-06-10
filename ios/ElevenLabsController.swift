@@ -9,86 +9,79 @@ public class ElevenLabsController: NSObject {
   private var status: ElevenLabsSDK.Status = .disconnected
   private var eventEmitter: ((String, [String: Any]) -> Void)?
 
-  
-  @objc
-  func multiply(a: Double, b: Double) -> NSNumber {
-      return NSNumber(value: a * b)
-  }
-  
-  @objc public func setEventEmitter(_ emitter: @escaping (String, [String: Any]) -> Void) {
-      self.eventEmitter = emitter
-  }
-  
-  
-  @objc public func stopConversation() {
-    if status == .connected {
-      conversation?.endSession()
-      conversation = nil
-      status = .disconnected
-//      sendEventToJS(name: "ConversationalAIOnDisconnect", body: [:])
+  // Helper to emit events on main thread
+  private func emitEvent(_ name: String, _ payload: [String: Any]) {
+    DispatchQueue.main.async { [weak self] in
+      self?.eventEmitter?(name, payload)
     }
   }
-  
-  
+
+  @objc public func setEventEmitter(_ emitter: @escaping (String, [String: Any]) -> Void) {
+    self.eventEmitter = emitter
+  }
+
+  @objc public func stopConversation() {
+    guard status == .connected else { return }
+    conversation?.endSession()
+    conversation = nil
+    updateStatus(.disconnected)
+    emitEvent(ElevenLabsEventEvents.onDisconnect, [:])
+  }
+
+  private func updateStatus(_ newStatus: ElevenLabsSDK.Status) {
+    status = newStatus
+    emitEvent(ElevenLabsEventEvents.onStatusChange, ["status": newStatus.rawValue])
+  }
+
   @objc public func startConversation(_ agentId: String) {
     if status == .connected {
-          conversation?.endSession()
-          conversation = nil
-          status = .disconnected
-        } else {
-        let config = ElevenLabsSDK.SessionConfig(agentId: agentId)
-        var callbacks = ElevenLabsSDK.Callbacks()
+      stopConversation()
+    }
 
-        callbacks.onConnect = { [weak self] conversationId in
-          self?.status = .connected
-          let eventName = ElevenLabsEventEvents.onConnect
-          self?.eventEmitter?(eventName, ["conversationId": conversationId])
-        }
+    let config = ElevenLabsSDK.SessionConfig(agentId: agentId)
+    var callbacks = ElevenLabsSDK.Callbacks()
 
-        callbacks.onDisconnect = { [weak self] in
-          self?.status = .disconnected
-          let eventName = ElevenLabsEventEvents.onDisconnect as NSString as String
-          self?.eventEmitter?(eventName,  [:])
-        }
+    callbacks.onConnect = { [weak self] conversationId in
+      guard let self = self else { return }
+      self.updateStatus(.connected)
+      self.emitEvent(ElevenLabsEventEvents.onConnect, ["conversationId": conversationId])
+    }
 
-        callbacks.onMessage = { [weak self] message, role in
-          let roleValue = role.rawValue
-          DispatchQueue.main.async {
-            let eventName = ElevenLabsEventEvents.onMessage
-            self?.eventEmitter?(eventName, ["message": message, "role": roleValue])
-          }
-        }
+    callbacks.onDisconnect = { [weak self] in
+      guard let self = self else { return }
+      self.updateStatus(.disconnected)
+      self.emitEvent(ElevenLabsEventEvents.onDisconnect, [:])
+    }
 
-        callbacks.onError = { [weak self] errorMessage, info in
-          let eventName = ElevenLabsEventEvents.onError
-          self?.eventEmitter?(eventName,  ["error": errorMessage, "info": info ?? ""])
-        }
+    callbacks.onMessage = { [weak self] message, role in
+      guard let self = self else { return }
+      self.emitEvent(ElevenLabsEventEvents.onMessage, ["message": message, "role": role.rawValue])
+    }
 
-        callbacks.onStatusChange = { [weak self] newStatus in
-          DispatchQueue.main.async {
-            let eventName = ElevenLabsEventEvents.onStatusChange
-            self?.eventEmitter?(eventName,  ["status": newStatus.rawValue])
-          }
-        }
+    callbacks.onError = { [weak self] errorMessage, info in
+      guard let self = self else { return }
+      self.emitEvent(ElevenLabsEventEvents.onError, ["error": errorMessage, "info": info ?? ""])
+    }
 
-        callbacks.onModeChange = { [weak self] newMode in
-          DispatchQueue.main.async {
-            let eventName = ElevenLabsEventEvents.onModeChange
-            self?.eventEmitter?(eventName, ["mode": newMode.rawValue])
-          }
-        }
+    callbacks.onStatusChange = { [weak self] newStatus in
+      guard let self = self else { return }
+      self.updateStatus(newStatus)
+    }
 
-        callbacks.onVolumeUpdate = { [weak self] newVolume in
-          DispatchQueue.main.async {
-            let eventName = ElevenLabsEventEvents.onVolumeUpdate
-            self?.eventEmitter?(eventName, ["volume": newVolume])
-          }
-        }
+    callbacks.onModeChange = { [weak self] newMode in
+      guard let self = self else { return }
+      self.emitEvent(ElevenLabsEventEvents.onModeChange, ["mode": newMode.rawValue])
+    }
 
-        Task { [weak self] in
-          let conversation = try? await ElevenLabsSDK.Conversation.startSession(config: config, callbacks: callbacks)
-          self?.conversation = conversation
-        }
-      }
+    callbacks.onVolumeUpdate = { [weak self] newVolume in
+      guard let self = self else { return }
+      self.emitEvent(ElevenLabsEventEvents.onVolumeUpdate, ["volume": newVolume])
+    }
+
+    Task { [weak self] in
+      guard let self = self else { return }
+      let conversation = try? await ElevenLabsSDK.Conversation.startSession(config: config, callbacks: callbacks)
+      self.conversation = conversation
+    }
   }
 }
