@@ -1,5 +1,13 @@
 import Elevenlabs from './NativeElevenlabs';
 
-export function multiply(a: number, b: number): number {
-  return Elevenlabs.multiply(a, b);
+export function startConversation(
+  agentId: string,
+  onSuccess: () => void,
+  onError: (error: string) => void
+) {
+  Elevenlabs.startConversation(agentId, onSuccess, onError);
+}
+
+export function stopConversation() {
+  Elevenlabs.stopConversation();
 }

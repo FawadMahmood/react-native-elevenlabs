@@ -1,5 +1,5 @@
 #import <ElevenlabsSpec/ElevenlabsSpec.h>
 
-@interface Elevenlabs : NSObject <NativeElevenlabsSpec>
+@interface Elevenlabs : NativeElevenlabsSpecBase <NativeElevenlabsSpec>
 
 @end

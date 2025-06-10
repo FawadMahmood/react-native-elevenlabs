@@ -5,27 +5,62 @@
 #import "Elevenlabs-Swift.h"
 #endif
 
-@implementation Elevenlabs
+@implementation Elevenlabs{
+  ElevenLabsController *controller;
+}
 
-+ (ElevenLabsController *)sharedInstance {
-  static ElevenLabsController *sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[ElevenLabsController alloc] init];
-    });
-    return sharedInstance;
+- (id) init {
+  if (self = [super init]) {
+    controller = [ElevenLabsController new];
+    [controller setEventEmitter:^(NSString* event, NSDictionary *body) {
+      // Use if-else or a dictionary lookup, since switch does not work with NSString
+      if ([event isEqualToString:ElevenLabsEventEvents.onMessage]) {
+        [self emitOnMessage:body];
+      } else if ([event isEqualToString:ElevenLabsEventEvents.onConnect]) {
+        [self emitOnConnect:body];
+      } else if ([event isEqualToString:ElevenLabsEventEvents.onDisconnect]) {
+        [self emitOnDisconnect:body];
+      } else if ([event isEqualToString:ElevenLabsEventEvents.onError]) {
+        [self emitOnError:body];
+      } else if ([event isEqualToString:ElevenLabsEventEvents.onStatusChange]) {
+        [self emitOnStatusChange:body];
+      } else if ([event isEqualToString:ElevenLabsEventEvents.onModeChange]) {
+        [self emitOnModeChange:body];
+      } else if ([event isEqualToString:ElevenLabsEventEvents.onVolumeUpdate]) {
+        [self emitOnVolumeUpdate:body];
+      }
+    }];
+  }
+  return self;
 }
 
 RCT_EXPORT_MODULE()
 
-- (NSNumber *)multiply:(double)a b:(double)b {
-    static Elevenlabs *swiftInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        swiftInstance = [Elevenlabs new];
-    });
-//    return [swiftInstance multiplyWithA:a b:b];
-  return @10;
+- (void)startConversation:(NSString *)agentId
+                      onSuccess:(RCTResponseSenderBlock)onSuccess
+                      onError:(RCTResponseSenderBlock)onError {
+  @try {
+      [controller startConversation:agentId];
+      if (onSuccess) {
+        onSuccess(@[]);
+      }
+    }
+    @catch (NSException *exception) {
+      if (onError) {
+        onError(@[exception.reason ?: @"Unknown error"]);
+      }
+    }
+}
+
+- (void)stopConversation {
+  [controller stopConversation];
+}
+
+
+- (void)setEventEmitter:(void (^)(NSString *name, NSDictionary *body))emitter {
+  if ([controller respondsToSelector:@selector(setEventEmitter:)]) {
+    [controller performSelector:@selector(setEventEmitter:) withObject:emitter];
+  }
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
