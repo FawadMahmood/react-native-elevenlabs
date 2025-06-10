@@ -33,50 +33,46 @@ public class ElevenLabsController: NSObject {
     emitEvent(ElevenLabsEventEvents.onStatusChange, ["status": newStatus.rawValue])
   }
 
+  private func handleEvent(_ event: String, _ payload: [String: Any]) {
+    emitEvent(event, payload)
+  }
+
+
+  private func setupCallbacks() -> ElevenLabsSDK.Callbacks {
+    var callbacks = ElevenLabsSDK.Callbacks()
+    callbacks.onConnect = { [weak self] conversationId in
+        self?.handleEvent(ElevenLabsEventEvents.onConnect, ["conversationId": conversationId])
+        self?.updateStatus(.connected)
+    }
+    callbacks.onDisconnect = { [weak self] in
+        self?.handleEvent(ElevenLabsEventEvents.onDisconnect, [:])
+        self?.updateStatus(.disconnected)
+    }
+    callbacks.onMessage = { [weak self] message, role in
+        self?.handleEvent(ElevenLabsEventEvents.onMessage, ["message": message, "role": role.rawValue])
+    }
+    callbacks.onError = { [weak self] errorMessage, info in
+        self?.handleEvent(ElevenLabsEventEvents.onError, ["error": errorMessage, "info": info ?? ""])
+    }
+    callbacks.onStatusChange = { [weak self] newStatus in
+        self?.updateStatus(newStatus)
+    }
+    callbacks.onModeChange = { [weak self] newMode in
+        self?.handleEvent(ElevenLabsEventEvents.onModeChange, ["mode": newMode.rawValue])
+    }
+    callbacks.onVolumeUpdate = { [weak self] newVolume in
+        self?.handleEvent(ElevenLabsEventEvents.onVolumeUpdate, ["volume": newVolume])
+    }
+    return callbacks
+  }
+
   @objc public func startConversation(_ agentId: String) {
     if status == .connected {
       stopConversation()
     }
 
     let config = ElevenLabsSDK.SessionConfig(agentId: agentId)
-    var callbacks = ElevenLabsSDK.Callbacks()
-
-    callbacks.onConnect = { [weak self] conversationId in
-      guard let self = self else { return }
-      self.updateStatus(.connected)
-      self.emitEvent(ElevenLabsEventEvents.onConnect, ["conversationId": conversationId])
-    }
-
-    callbacks.onDisconnect = { [weak self] in
-      guard let self = self else { return }
-      self.updateStatus(.disconnected)
-      self.emitEvent(ElevenLabsEventEvents.onDisconnect, [:])
-    }
-
-    callbacks.onMessage = { [weak self] message, role in
-      guard let self = self else { return }
-      self.emitEvent(ElevenLabsEventEvents.onMessage, ["message": message, "role": role.rawValue])
-    }
-
-    callbacks.onError = { [weak self] errorMessage, info in
-      guard let self = self else { return }
-      self.emitEvent(ElevenLabsEventEvents.onError, ["error": errorMessage, "info": info ?? ""])
-    }
-
-    callbacks.onStatusChange = { [weak self] newStatus in
-      guard let self = self else { return }
-      self.updateStatus(newStatus)
-    }
-
-    callbacks.onModeChange = { [weak self] newMode in
-      guard let self = self else { return }
-      self.emitEvent(ElevenLabsEventEvents.onModeChange, ["mode": newMode.rawValue])
-    }
-
-    callbacks.onVolumeUpdate = { [weak self] newVolume in
-      guard let self = self else { return }
-      self.emitEvent(ElevenLabsEventEvents.onVolumeUpdate, ["volume": newVolume])
-    }
+    let callbacks = setupCallbacks()
 
     Task { [weak self] in
       guard let self = self else { return }
