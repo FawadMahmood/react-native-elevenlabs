@@ -2,6 +2,7 @@ package com.elevenlabs
 
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.bridge.Callback;
 
 @ReactModule(name = ElevenlabsModule.NAME)
 class ElevenlabsModule(reactContext: ReactApplicationContext) :
@@ -11,13 +12,8 @@ class ElevenlabsModule(reactContext: ReactApplicationContext) :
     return NAME
   }
 
-  override fun startConversation(agentId: String, promise: Promise) {
-    try {
-      // TODO: Implement actual logic to start conversation
-      promise.resolve(null)
-    } catch (e: Exception) {
-      promise.reject("START_CONVERSATION_ERROR", e.message, e)
-    }
+  override fun startConversation(agentId: String,onSuccess: Callback, onError: Callback) {
+    // TODO: Implement actual logic to start conversation
   }
 
   override fun stopConversation() {
