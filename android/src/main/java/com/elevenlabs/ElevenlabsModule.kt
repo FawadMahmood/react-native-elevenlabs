@@ -3,6 +3,7 @@ package com.elevenlabs
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReadableMap
 
 @ReactModule(name = ElevenlabsModule.NAME)
 class ElevenlabsModule(reactContext: ReactApplicationContext) :
