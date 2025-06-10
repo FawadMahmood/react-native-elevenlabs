@@ -1,5 +1,5 @@
 #import "Elevenlabs.h"
-#import "Elevenlabs-Swift.h" // Replace with your actual module name
+#import "Elevenlabs-Swift.h"
 
 @implementation Elevenlabs
 
@@ -15,12 +15,13 @@
 RCT_EXPORT_MODULE()
 
 - (NSNumber *)multiply:(double)a b:(double)b {
-    static SwiftElevenlabs *swiftInstance = nil;
+    static Elevenlabs *swiftInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        swiftInstance = [SwiftElevenlabs new];
+        swiftInstance = [Elevenlabs new];
     });
-    return [swiftInstance multiplyWithA:a b:b];
+//    return [swiftInstance multiplyWithA:a b:b];
+  return @10;
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:

@@ -1,7 +1,7 @@
 PODS:
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
-  - Elevenlabs (0.1.3):
+  - Elevenlabs (0.1.4):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1908,7 +1908,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  Elevenlabs: d806220a7f65c0202f5b289762b3ea03effd4478
+  Elevenlabs: dfc65017d5e9f05159f8743713b1f32902ba3ead
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 84b955f7b4da8b895faf5946f73748267347c975
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
