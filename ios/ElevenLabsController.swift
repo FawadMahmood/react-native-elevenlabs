@@ -1,5 +1,4 @@
 import Foundation
-import ElevenLabsSDK
 
 @objc(ElevenLabsController)
 public class ElevenLabsController: NSObject {

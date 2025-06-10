@@ -1,7 +1,9 @@
 PODS:
   - boost (1.84.0)
+  - DeviceKit (5.6.0)
   - DoubleConversion (1.1.6)
-  - Elevenlabs (0.2.2):
+  - Elevenlabs (0.2.3):
+    - DeviceKit
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1758,6 +1760,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - DeviceKit
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1907,8 +1910,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
+  DeviceKit: 9f2e0b68984a384f864b0f4e40a54bae43636bd8
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  Elevenlabs: 9da7c9a849800a8068cd52d62199351769143e98
+  Elevenlabs: a0a5f778924ba6b48219fc859f4fac343c120950
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 84b955f7b4da8b895faf5946f73748267347c975
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
