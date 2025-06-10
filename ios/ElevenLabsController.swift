@@ -1,8 +1,8 @@
 import Foundation
 import ElevenLabsSDK
 
-@objc(SwiftElevenlabs)
-class SwiftElevenlabs: NSObject {
+@objc(ElevenLabsController)
+public class ElevenLabsController: NSObject {
   private var currentAgentIndex = 0
   private var conversation: ElevenLabsSDK.Conversation?
   private var audioLevel: Float = 0.0

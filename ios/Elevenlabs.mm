@@ -1,13 +1,17 @@
 #import "Elevenlabs.h"
+#if __has_include(<Elevenlabs/Elevenlabs-Swift.h>)
+#import <Elevenlabs/Elevenlabs-Swift.h>
+#else
 #import "Elevenlabs-Swift.h"
+#endif
 
 @implementation Elevenlabs
 
-+ (SwiftElevenlabs *)sharedInstance {
-    static SwiftElevenlabs *sharedInstance = nil;
++ (ElevenLabsController *)sharedInstance {
+  static ElevenLabsController *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[SwiftElevenlabs alloc] init];
+        sharedInstance = [[ElevenLabsController alloc] init];
     });
     return sharedInstance;
 }
