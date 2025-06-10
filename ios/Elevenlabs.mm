@@ -3,11 +3,11 @@
 
 @implementation Elevenlabs
 
-+ (instancetype)sharedInstance {
-    static Elevenlabs *sharedInstance = nil;
++ (SwiftElevenlabs *)sharedInstance {
+    static SwiftElevenlabs *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[self alloc] init];
+        sharedInstance = [[SwiftElevenlabs alloc] init];
     });
     return sharedInstance;
 }
