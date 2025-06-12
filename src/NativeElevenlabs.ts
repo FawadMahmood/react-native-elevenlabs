@@ -37,6 +37,8 @@ export interface Spec extends TurboModule {
     dynamicVariables?: { [key: string]: string | number | boolean }
   ): void;
   stopConversation(): void;
+  startRecording(): void;
+  stopRecording(): void;
 
   readonly onMessage: EventEmitter<ConversationalAIOnMessage>;
   readonly onConnect: EventEmitter<ConversationalAIOnConnect>;

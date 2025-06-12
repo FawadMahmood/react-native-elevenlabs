@@ -58,6 +58,13 @@ RCT_EXPORT_MODULE()
   [controller stopConversation];
 }
 
+- (void)startRecording {
+  [controller startRecording];
+}
+
+- (void)stopRecording {
+  [controller stopRecording];
+}
 
 - (void)setEventEmitter:(void (^)(NSString *name, NSDictionary *body))emitter {
   if ([controller respondsToSelector:@selector(setEventEmitter:)]) {

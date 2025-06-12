@@ -69,6 +69,16 @@ public class ElevenLabsController: NSObject {
     return callbacks
   }
   
+  @objc public func startRecording() {
+    guard status == .connected else { return }
+    conversation?.startRecording()
+  }
+  
+  @objc public func stopRecording() {
+    guard status == .connected else { return }
+    conversation?.stopRecording()
+  }
+
   @objc public func startConversation(_ agentId: String, dynamicVariables: [String: Any]) {
     if status == .connected {
       stopConversation()
@@ -91,6 +101,7 @@ public class ElevenLabsController: NSObject {
     Task { [weak self] in
       guard let self = self else { return }
       let conversation = try? await ElevenLabsSDK.Conversation.startSession(config: config, callbacks: callbacks)
+  
       self.conversation = conversation
     }
   }

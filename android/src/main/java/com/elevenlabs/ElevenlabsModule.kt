@@ -21,6 +21,14 @@ class ElevenlabsModule(reactContext: ReactApplicationContext) :
     // TODO: Implement actual logic to stop conversation
   }
 
+  override fun startRecording() {
+    // TODO: Implement actual logic to stop conversation
+  }
+
+  override fun stopRecording() {
+    // TODO: Implement actual logic to stop conversation
+  }
+
   companion object {
     const val NAME = "Elevenlabs"
   }
