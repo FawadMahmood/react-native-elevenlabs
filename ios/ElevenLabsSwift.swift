@@ -819,23 +819,52 @@ public class ElevenLabsSDK {
         }
       
       private func onOutputVolume(rms: Float){
-        var silenceTimer: Timer? = nil
-        let silenceThreshold: Float = 0.001 // Adjust as needed
+        // Prevent re-entrancy: skip if already processing
+        struct Static {
+            static var isProcessing = false
+            static var silenceTimer: Timer? = nil
+            static var lastSpeakingUpdate: Date? = nil
+        }
+        guard !Static.isProcessing else { return }
+        Static.isProcessing = true
+        defer { Static.isProcessing = false }
+
+        NSLog("rms \(rms)")
+        let silenceThreshold: Float = 0.0 // Adjust as needed
         let silenceDuration: TimeInterval = 0.5 // 500ms
-        
-        if rms < silenceThreshold {
-            if silenceTimer == nil {
-                silenceTimer = Timer.scheduledTimer(withTimeInterval: silenceDuration, repeats: false) { [weak self] _ in
+
+        func markProcessed() {
+            Static.isProcessing = false
+        }
+
+        if rms <= silenceThreshold {
+            if Static.silenceTimer == nil {
+                Static.silenceTimer = Timer.scheduledTimer(withTimeInterval: silenceDuration, repeats: false) { [weak self] _ in
                     guard let self = self else { return }
-                    silenceTimer = nil
+                    Static.silenceTimer = nil
+                    // Only update to listening if .speaking hasn't been set in the last 200ms
+                    if let lastSpeaking = Static.lastSpeakingUpdate, Date().timeIntervalSince(lastSpeaking) < 0.2 {
+                        markProcessed()
+                        return
+                    }
                     if self.mode != .listening {
                         self.updateMode(.listening)
+                        markProcessed()
+                    } else {
+                        markProcessed()
                     }
                 }
+                return // Don't mark processed yet, timer will do it
             }
         } else {
-            silenceTimer?.invalidate()
-            silenceTimer = nil
+            Static.silenceTimer?.invalidate()
+            Static.silenceTimer = nil
+            if self.mode != .speaking {
+                self.updateMode(.speaking)
+                Static.lastSpeakingUpdate = Date()
+                markProcessed()
+                return
+            }
         }
       }
 
