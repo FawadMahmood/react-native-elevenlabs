@@ -829,7 +829,6 @@ public class ElevenLabsSDK {
         Static.isProcessing = true
         defer { Static.isProcessing = false }
 
-        NSLog("rms \(rms)")
         let silenceThreshold: Float = 0.0 // Adjust as needed
         let silenceDuration: TimeInterval = 0.5 // 500ms
 
