@@ -1,4 +1,3 @@
-//DONT MAKE ANY CHANGES IT IS FROM ELEVEN LABS PACKAGE
 import AVFoundation
 import Combine
 import DeviceKit
@@ -668,6 +667,16 @@ public class ElevenLabsSDK {
         public var onModeChange: @Sendable (Mode) -> Void = { _ in }
         public var onVolumeUpdate: @Sendable (Float) -> Void = { _ in }
 
+        /// A callback that receives the updated RMS level of the output audio
+        public var onOutputVolumeUpdate: @Sendable (Float) -> Void = { _ in }
+
+        /// A callback that informs about a message correction.
+        /// - Parameters:
+        ///   - original: The original message. (Type: `String`)
+        ///   - corrected: The corrected message. (Type: `String`)
+        ///   - role: The role associated with the correction. (Type: `Role`)
+        public var onMessageCorrection: @Sendable (String, String, Role) -> Void = { _, _, _ in }
+
         public init() {}
     }
 
@@ -689,8 +698,6 @@ public class ElevenLabsSDK {
         private var currentInputVolume: Float = 0.0
 
         private var _mode: Mode = .listening
-        private var modeTransitionWorkItem: DispatchWorkItem?
-        private var lastMode: Mode = .listening
         private var _status: Status = .connecting
         private var _volume: Float = 1.0
         private var _lastInterruptTimestamp: Int = 0
@@ -784,10 +791,53 @@ public class ElevenLabsSDK {
                 }
             }
 
+            /// Installs a tap on the output to calculate and report the RMS audio level
+            let intervalFrames = AVAudioFrameCount(Double(connection.sampleRate) * Constants.volumeUpdateInterval)
+            output.mixer.installTap(onBus: 0, bufferSize: intervalFrames, format: output.audioFormat) { buffer, _ in
+                guard let floatChan = buffer.floatChannelData?[0] else { return }
+                let frameCount = Int(buffer.frameLength)
+
+                // simple RMS
+                var sumSq: Float = 0
+                for i in 0 ..< frameCount {
+                    let s = floatChan[i]
+                    sumSq += s * s
+                }
+                let rms = sqrt(sumSq / Float(frameCount))
+
+                DispatchQueue.main.async {
+                  self.callbacks.onOutputVolumeUpdate(rms)
+                  self.onOutputVolume(rms: rms)
+                }
+            }
+
+          
+          
             setupWebSocket()
             setupAudioProcessing()
             setupInputVolumeMonitoring()
         }
+      
+      private func onOutputVolume(rms: Float){
+        var silenceTimer: Timer? = nil
+        let silenceThreshold: Float = 0.001 // Adjust as needed
+        let silenceDuration: TimeInterval = 0.5 // 500ms
+        
+        if rms < silenceThreshold {
+            if silenceTimer == nil {
+                silenceTimer = Timer.scheduledTimer(withTimeInterval: silenceDuration, repeats: false) { [weak self] _ in
+                    guard let self = self else { return }
+                    silenceTimer = nil
+                    if self.mode != .listening {
+                        self.updateMode(.listening)
+                    }
+                }
+            }
+        } else {
+            silenceTimer?.invalidate()
+            silenceTimer = nil
+        }
+      }
 
         /// Starts a new conversation session
         /// - Parameters:
@@ -835,7 +885,7 @@ public class ElevenLabsSDK {
 
             // Step 7: Start recording
             conversation.startRecording()
-            
+
             return conversation
         }
 
@@ -859,7 +909,6 @@ public class ElevenLabsSDK {
 
                 switch result {
                 case let .success(message):
-
                     self.handleWebSocketMessage(message)
                 case let .failure(error):
                     self.logger.error("WebSocket error: \(error.localizedDescription)")
@@ -886,7 +935,6 @@ public class ElevenLabsSDK {
         private func handleWebSocketMessage(_ message: URLSessionWebSocketTask.Message) {
             switch message {
             case let .string(text):
-
                 guard let data = text.data(using: .utf8),
                       let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                       let type = json["type"] as? String
@@ -904,6 +952,9 @@ public class ElevenLabsSDK {
 
                 case "agent_response":
                     handleAgentResponseEvent(json)
+
+                case "agent_response_correction":
+                    handleAgentResponseCorrectionEvent(json)
 
                 case "user_transcript":
                     handleUserTranscriptEvent(json)
@@ -999,6 +1050,13 @@ public class ElevenLabsSDK {
             callbacks.onMessage(response, .ai)
         }
 
+        private func handleAgentResponseCorrectionEvent(_ json: [String: Any]) {
+            guard let event = json["agent_response_correction_event"] as? [String: Any],
+                  let original_response = event["original_agent_response"] as? String,
+                  let corrected_response = event["corrected_agent_response"] as? String else { return }
+            callbacks.onMessageCorrection(original_response, corrected_response, .ai)
+        }
+
         private func handleUserTranscriptEvent(_ json: [String: Any]) {
             guard let event = json["user_transcription_event"] as? [String: Any],
                   let transcript = event["user_transcript"] as? String else { return }
@@ -1061,22 +1119,6 @@ public class ElevenLabsSDK {
             input.setRecordCallback { [weak self] buffer, rms in
                 guard let self = self, self.isProcessingInput else { return }
 
-                let speakingThreshold: Float = 0.02 // Adjust as needed
-                let transitionDelay: TimeInterval = 0.3 // 200ms delay for smoothness
-
-                let newMode: Mode = rms > speakingThreshold ? .speaking : .listening
-
-                if newMode != self.lastMode {
-                    self.modeTransitionWorkItem?.cancel()
-                    let workItem = DispatchWorkItem { [weak self] in
-                        guard let self = self else { return }
-                        self.updateMode(newMode)
-                        self.lastMode = newMode
-                    }
-                    self.modeTransitionWorkItem = workItem
-                    DispatchQueue.main.asyncAfter(deadline: .now() + transitionDelay, execute: workItem)
-                }
-                
                 // Convert buffer data to base64 string
                 if let int16ChannelData = buffer.int16ChannelData {
                     let frameLength = Int(buffer.frameLength)
